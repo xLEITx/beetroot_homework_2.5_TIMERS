@@ -1,18 +1,29 @@
 #include <Arduino.h>
+constexpr uint8_t WORKING_TIME = 10;
+constexpr uint8_t IDLE_TIME = 30;
 
-// put function declarations here:
-int myFunction(int, int);
+constexpr uint8_t CNTRL_PIN = 6;
+
+class Motor{
+  private:
+    bool isWorking = 0;
+  public:
+    void changeState(){
+      isWorking = !isWorking;
+    }
+    bool getState(){
+      return isWorking;
+    }
+};
+
+
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  Serial.begin(115200);
+  delay(50);
+  pinMode(CNTRL_PIN, OUTPUT);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
 }

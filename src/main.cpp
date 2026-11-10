@@ -7,43 +7,41 @@ constexpr uint8_t CNTRL_PIN = 6;
 hw_timer_t *timer_working = NULL;
 hw_timer_t *timer_idle = NULL;
 
-void IRAM_ATTR onWorkingTimer(){
+volatile bool isMotorWorking = true;
 
+void IRAM_ATTR onWorkingTimer(){
+  isMotorWorking = !isMotorWorking;
+  timerWrite(timer_idle, 0);
+  timerAlarmEnable(timer_idle);
 }
 
 void IRAM_ATTR onIdleTimer(){
-
+  isMotorWorking = !isMotorWorking;
+  timerWrite(timer_working, 0);
+  timerAlarmEnable(timer_working);
 }
-
-class Motor{
-  private:
-    bool isWorking = 0;
-  public:
-    void changeState(){
-      isWorking = !isWorking;
-    }
-    bool getState(){
-      return isWorking;
-    }
-};
-
-
 
 void setup() {
   Serial.begin(115200);
   delay(50);
   pinMode(CNTRL_PIN, OUTPUT);
 
-  timer_working = timerBegin(0, 80000, true);
+  timer_working = timerBegin(0, 80, true);
   timerAttachInterrupt(timer_working, &onWorkingTimer, true);
-  timerAlarmWrite(timer_working, 1000*WORKING_TIME, false);
+  timerAlarmWrite(timer_working, 1000000ULL*WORKING_TIME, false);
   timerAlarmEnable(timer_working);
 
-  timer_idle = timerBegin(0, 80000, true);
-  timerAttachInterrupt(timer_working, &onIdleTimer, true);
-  timerAlarmWrite(timer_working, 1000*WORKING_TIME, false);
+  timer_idle = timerBegin(1, 80, true);
+  timerAttachInterrupt(timer_idle, &onIdleTimer, true);
+  timerAlarmWrite(timer_idle, 1000000ULL*IDLE_TIME, false);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  if (isMotorWorking)
+  {
+    digitalWrite(CNTRL_PIN, HIGH);
+  }else{
+    digitalWrite(CNTRL_PIN, LOW);
+  }
+  
 }
